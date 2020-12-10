@@ -14,10 +14,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import javax.transaction.Transactional;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.core.Is.isA;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,13 +47,32 @@ public class CRUDTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].email",equalTo("james@jamestown.us")))
-                .andExpect(jsonPath("$[0].password",nullValue()))
+                .andExpect(jsonPath("$[0]",not(hasProperty("password"))))
         ;
     }
+
     @Test
     @Rollback
     @Transactional
     public void GetOneTest() throws Exception {
+        long id = repository.findAll().iterator().next().getId();
+        Iterator<User> it = repository.findAll().iterator();
+        assertTrue(it.hasNext());
+        do {
+            if (!it.hasNext())
+                break;
+            User u = it.next();
+            if (u.getEmail().equals("james@jamestown.us")){
+                id = u.getId();
+                break;
+            }
+        } while (it.hasNext());
+        mvc.perform(get("/users/"+id).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", isA(User.class)))
+                .andExpect(jsonPath("$.email",equalTo("james@jamestown.us")))
+                .andExpect(jsonPath("$",not(hasProperty("password"))))
+        ;
     }
     @Test
     @Rollback
