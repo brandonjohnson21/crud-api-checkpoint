@@ -1,10 +1,9 @@
 package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +21,16 @@ public class UserController {
     @GetMapping("/users/{id}")
     public Optional<User> getUser(@PathVariable long id) {
         return repository.findById(id);
+    }
+    @PostMapping("/users")
+    public User postUser(@RequestBody HashMap<String,String> userMap) {
+        if (userMap.containsKey("email") && userMap.containsKey("password") && !userMap.get("email").isEmpty() && !userMap.get("password").isEmpty()) {
+            //TODO: EMAIL VALIDATION
+            User user = new User(userMap.get("email"),userMap.get("password"));
+            repository.save(user);
+            return user;
+        }
+        return null;
     }
 
 }

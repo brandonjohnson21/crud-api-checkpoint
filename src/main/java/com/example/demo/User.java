@@ -12,7 +12,6 @@ public class User {
     private Long id;
 
     private String email;
-    @JsonIgnore
     private String password;
 
     User(String email, String password) {
@@ -34,7 +33,7 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
