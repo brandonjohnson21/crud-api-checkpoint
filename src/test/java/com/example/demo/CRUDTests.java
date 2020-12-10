@@ -77,6 +77,13 @@ public class CRUDTests {
     @Rollback
     @Transactional
     public void PostOneTest() throws Exception {
+        mvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"john@example.com\",\"password\": \"something-secret\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email",equalTo("john@example.com")))
+                .andExpect(jsonPath("$",not(hasProperty("password"))))
+        ;
+
+
     }
     @Test
     @Rollback
