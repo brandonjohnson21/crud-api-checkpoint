@@ -46,4 +46,13 @@ public class UserController {
         });
         return user;
     }
+    @DeleteMapping("/users/{id}")
+    public HashMap<String,Long> deleteUser(@PathVariable long id) {
+        Optional<User> user = repository.findById(id);
+        if (user.isPresent())
+            repository.deleteById(id);
+        HashMap<String,Long> ret = new HashMap<>();
+        ret.put("count",repository.count());
+        return ret;
+    }
 }
