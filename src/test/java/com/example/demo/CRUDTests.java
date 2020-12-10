@@ -115,11 +115,22 @@ public class CRUDTests {
     @Rollback
     @Transactional
     public void GoodAuthenticateTest() throws Exception {
+        mvc.perform(post("/users/authenticate").contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"johnny@example.com\",\"password\":\"123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated",equalTo(true)))
+                .andExpect(jsonPath("$.user",hasProperty("id")))
+                .andExpect(jsonPath("$.user.email",equalTo("johnny@example.com")))
+        ;
     }
     @Test
     @Rollback
     @Transactional
     public void BadAuthenticateTest() throws Exception {
+        mvc.perform(post("/users/authenticate").contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"johnny@example.com\",\"password\":\"abc\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated",equalTo(false)))
+                .andExpect(jsonPath("$",not(hasProperty("user"))))
+        ;
     }
 
 }
