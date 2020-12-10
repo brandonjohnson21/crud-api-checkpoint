@@ -32,5 +32,18 @@ public class UserController {
         }
         return null;
     }
-
+    @PatchMapping("/users/{id}")
+    public Optional<User> patchUser(@PathVariable long id, @RequestBody HashMap<String,String> userMap) {
+        Optional<User> user = repository.findById(id);
+        user.ifPresent(u->{
+            if (userMap.containsKey("email") && !userMap.get("email").isEmpty() ) {
+                u.setEmail(userMap.get("email"));
+            }
+            if (userMap.containsKey("password") && !userMap.get("password").isEmpty() ) {
+                u.setPassword(userMap.get("password"));
+            }
+            repository.save(u);
+        });
+        return user;
+    }
 }

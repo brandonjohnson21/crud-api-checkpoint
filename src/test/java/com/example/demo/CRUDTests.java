@@ -32,11 +32,20 @@ public class CRUDTests {
     @Autowired
     UsersRepository repository;
     ObjectMapper mapper = new ObjectMapper();
-
+    Long id0;
     @BeforeEach
     public void init() {
         repository.saveAll(Arrays.asList(new User("james@jamestown.us","123"),new User("Holly@christmas.np","hohoho")));
-
+        Iterator<User> it = repository.findAll().iterator();
+        do {
+            if (!it.hasNext())
+                break;
+            User u = it.next();
+            if (u.getEmail().equals("james@jamestown.us")){
+                id0 = u.getId();
+                break;
+            }
+        } while (it.hasNext());
     }
 
     @Test
@@ -55,19 +64,7 @@ public class CRUDTests {
     @Rollback
     @Transactional
     public void GetOneTest() throws Exception {
-        long id = repository.findAll().iterator().next().getId();
-        Iterator<User> it = repository.findAll().iterator();
-        assertTrue(it.hasNext());
-        do {
-            if (!it.hasNext())
-                break;
-            User u = it.next();
-            if (u.getEmail().equals("james@jamestown.us")){
-                id = u.getId();
-                break;
-            }
-        } while (it.hasNext());
-        mvc.perform(get("/users/"+id).accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/users/"+id0).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",equalTo("james@jamestown.us")))
                 .andExpect(jsonPath("$",not(hasProperty("password"))))
@@ -89,11 +86,21 @@ public class CRUDTests {
     @Rollback
     @Transactional
     public void PatchOneTest() throws Exception {
+        mvc.perform(patch("/users/"+id0).contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"johnny@example.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email",equalTo("johnny@example.com")))
+                .andExpect(jsonPath("$",not(hasProperty("password"))))
+        ;
     }
     @Test
     @Rollback
     @Transactional
     public void PatchOneTest2() throws Exception {
+        mvc.perform(patch("/users/"+id0).contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"jornny@example.com\",\"password\":\"fantastic\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email",equalTo("jornny@example.com")))
+                .andExpect(jsonPath("$",not(hasProperty("password"))))
+        ;
     }
     @Test
     @Rollback
