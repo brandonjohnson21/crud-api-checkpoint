@@ -55,4 +55,22 @@ public class UserController {
         ret.put("count",repository.count());
         return ret;
     }
+    @PostMapping("/users/authenticate")
+    public HashMap<String,Object> authenticate(@RequestBody HashMap<String,String> user) {
+        Boolean authenticated = false;
+        User foundUser=null;
+        HashMap<String, Object> ret = new HashMap<>();
+        if (user.containsKey("email") && user.containsKey("password")) {
+            foundUser = repository.findByEmail(user.get("email"));
+
+            if (foundUser != null)
+                authenticated = foundUser.getPassword().equals(user.get("password"));
+        }
+            ret.put("authenticated", authenticated);
+            if (authenticated) {
+                ret.put("user", foundUser);
+            }
+
+        return ret;
+    }
 }

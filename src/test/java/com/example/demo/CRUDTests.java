@@ -56,7 +56,7 @@ public class CRUDTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].email",equalTo("james@jamestown.us")))
-                .andExpect(jsonPath("$[0]",not(hasProperty("password"))))
+                .andExpect(jsonPath("$[0]",not(hasKey("password"))))
         ;
     }
 
@@ -67,7 +67,7 @@ public class CRUDTests {
         mvc.perform(get("/users/"+id0).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",equalTo("james@jamestown.us")))
-                .andExpect(jsonPath("$",not(hasProperty("password"))))
+                .andExpect(jsonPath("$",not(hasKey("password"))))
         ;
     }
     @Test
@@ -77,7 +77,7 @@ public class CRUDTests {
         mvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"john@example.com\",\"password\": \"something-secret\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",equalTo("john@example.com")))
-                .andExpect(jsonPath("$",not(hasProperty("password"))))
+                .andExpect(jsonPath("$",not(hasKey("password"))))
         ;
 
 
@@ -89,7 +89,7 @@ public class CRUDTests {
         mvc.perform(patch("/users/"+id0).contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"johnny@example.com\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",equalTo("johnny@example.com")))
-                .andExpect(jsonPath("$",not(hasProperty("password"))))
+                .andExpect(jsonPath("$",not(hasKey("password"))))
         ;
     }
     @Test
@@ -99,7 +99,7 @@ public class CRUDTests {
         mvc.perform(patch("/users/"+id0).contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"jornny@example.com\",\"password\":\"fantastic\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",equalTo("jornny@example.com")))
-                .andExpect(jsonPath("$",not(hasProperty("password"))))
+                .andExpect(jsonPath("$",not(hasKey("password"))))
         ;
     }
     @Test
@@ -115,18 +115,21 @@ public class CRUDTests {
     @Rollback
     @Transactional
     public void GoodAuthenticateTest() throws Exception {
-        mvc.perform(post("/users/authenticate").contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"johnny@example.com\",\"password\":\"123\"}"))
+        mvc.perform(post("/users/authenticate").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"james@jamestown.us\",\"password\":\"123\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated",equalTo(true)))
-                .andExpect(jsonPath("$.user",hasProperty("id")))
-                .andExpect(jsonPath("$.user.email",equalTo("johnny@example.com")))
+                .andExpect(jsonPath("$", hasKey("user")))
+                .andExpect(jsonPath("$.user",hasKey("id")))
+                .andExpect(jsonPath("$.user.email",equalTo("james@jamestown.us")))
+                .andExpect(jsonPath("$.user",not(hasKey("password"))))
+
         ;
     }
     @Test
     @Rollback
     @Transactional
     public void BadAuthenticateTest() throws Exception {
-        mvc.perform(post("/users/authenticate").contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"johnny@example.com\",\"password\":\"abc\"}"))
+        mvc.perform(post("/users/authenticate").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).content("{\"email\": \"james@jamestown.us\",\"password\":\"abc\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated",equalTo(false)))
                 .andExpect(jsonPath("$",not(hasProperty("user"))))
