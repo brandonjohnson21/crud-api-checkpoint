@@ -69,7 +69,6 @@ public class CRUDTests {
         } while (it.hasNext());
         mvc.perform(get("/users/"+id).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", isA(User.class)))
                 .andExpect(jsonPath("$.email",equalTo("james@jamestown.us")))
                 .andExpect(jsonPath("$",not(hasProperty("password"))))
         ;
