@@ -106,6 +106,10 @@ public class CRUDTests {
     @Rollback
     @Transactional
     public void DeleteOneTest() throws Exception {
+        mvc.perform(delete("/users/"+id0).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count",equalTo(1)))
+        ;
     }
     @Test
     @Rollback
