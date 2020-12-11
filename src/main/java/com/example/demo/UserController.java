@@ -1,10 +1,11 @@
 package com.example.demo;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.messages.AuthenticationResponse;
+import com.example.demo.messages.UserCountResponse;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -14,24 +15,28 @@ public class UserController {
         this.repository=repo;
     }
 
+    @JsonView(Views.Simple.class)
     @GetMapping("/users")
     public Iterable<User> getUsers() {
         return repository.findAll();
     }
+    @JsonView(Views.Simple.class)
     @GetMapping("/users/{id}")
     public Optional<User> getUser(@PathVariable long id) {
         return repository.findById(id);
     }
+    @JsonView(Views.Simple.class)
     @PostMapping("/users")
-    public User postUser(@RequestBody HashMap<String,String> userMap) {
-        if (userMap.containsKey("email") && userMap.containsKey("password") && !userMap.get("email").isEmpty() && !userMap.get("password").isEmpty()) {
+    public User postUser(@RequestBody User userMap) {
+        if (userMap.getEmail()!=null && userMap.getPassword()!=null && !userMap.getEmail().isEmpty() && !userMap.getPassword().isEmpty()) {
             //TODO: EMAIL VALIDATION
-            User user = new User(userMap.get("email"),userMap.get("password"));
+            User user = new User(userMap.getEmail(),userMap.getPassword());
             repository.save(user);
             return user;
         }
         return null;
     }
+    @JsonView(Views.Simple.class)
     @PatchMapping("/users/{id}")
     public Optional<User> patchUser(@PathVariable long id, @RequestBody HashMap<String,String> userMap) {
         Optional<User> user = repository.findById(id);
@@ -46,31 +51,25 @@ public class UserController {
         });
         return user;
     }
+
     @DeleteMapping("/users/{id}")
-    public HashMap<String,Long> deleteUser(@PathVariable long id) {
+    public UserCountResponse deleteUser(@PathVariable long id) {
         Optional<User> user = repository.findById(id);
         if (user.isPresent())
             repository.deleteById(id);
-        HashMap<String,Long> ret = new HashMap<>();
-        ret.put("count",repository.count());
-        return ret;
+        return new UserCountResponse(repository);
     }
+    @JsonView(Views.Simple.class)
     @PostMapping("/users/authenticate")
-    public HashMap<String,Object> authenticate(@RequestBody HashMap<String,String> user) {
-        Boolean authenticated = false;
-        User foundUser=null;
-        HashMap<String, Object> ret = new HashMap<>();
-        if (user.containsKey("email") && user.containsKey("password")) {
-            foundUser = repository.findByEmail(user.get("email"));
-
+    public AuthenticationResponse authenticate(@RequestBody User user) {
+        User foundUser;
+        AuthenticationResponse msg = new AuthenticationResponse();
+        if (user.getEmail() != null && !user.getEmail().isEmpty() && user.getPassword()!=null) {
+            foundUser = repository.findByEmail(user.getEmail());
             if (foundUser != null)
-                authenticated = foundUser.getPassword().equals(user.get("password"));
+                if (foundUser.getPassword().equals(user.getPassword()))
+                    msg.authenticate().user(foundUser);
         }
-            ret.put("authenticated", authenticated);
-            if (authenticated) {
-                ret.put("user", foundUser);
-            }
-
-        return ret;
+        return msg;
     }
 }

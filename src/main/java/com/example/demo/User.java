@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import javax.persistence.*;
 
@@ -9,9 +10,12 @@ import javax.persistence.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView(Views.Simple.class)
     private Long id;
 
+    @JsonView(Views.Simple.class)
     private String email;
+    @JsonView(Views.Extended.class)
     private String password;
 
     User(String email, String password) {
@@ -33,7 +37,6 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-    @JsonIgnore
     public String getPassword() {
         return password;
     }
